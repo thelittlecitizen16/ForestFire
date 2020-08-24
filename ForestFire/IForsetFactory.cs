@@ -6,7 +6,7 @@ namespace ForestFire
 {
     public interface IForsetFactory
     {
-        public IForset CreateForest(int num1, int num2);
+        public IForset CreateForest(int row, int column);
 
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Timer = System.Timers.Timer;
 
 namespace ForestFire
 {
@@ -9,9 +10,6 @@ namespace ForestFire
     {
         private IForsetFactory _forsetFactory;
         private Random _rand;
-        private int _num1;
-        private int _num2;
-        private int _interval;
         private Dictionary<State, string> _stateText;
         IForset forset;
 
@@ -25,74 +23,179 @@ namespace ForestFire
             _stateText.Add(State.OnFire, "X");
             _stateText.Add(State.Dead, ".");
         }
+        private  void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
+        {
+            List<ITree> allOnFireTress = new List<ITree>();
+
+            for (int i = 0; i < forset.forestTress.GetLength(0); i++)
+            {
+                for (int j = 0; j < forset.forestTress.GetLength(1); j++)
+                {
+                    if (forset.forestTress[i, j].State == State.OnFire)
+                    {
+                        allOnFireTress.Add(forset.forestTress[i, j]);
+                    }
+                }
+            }
+
+            allOnFireTress.ForEach(t => t.SetOthersOnFire());
+            allOnFireTress.ForEach(t => t.DownHealth());
+
+            Console.WriteLine($"......");
+            Print();
+        }
 
         public void Bootstrapping()
         {
+            int count = 1;
             CreateForset();
-            ConnectTrees(100);
-            SetFire(0, 0);
-            SetInterval(1000);
-            int count = 0;
+            ConnectTrees2(70);
+            ITree tree = SetFire(10, 10);
+            Print();
 
-            while (true)
-            {
-                Console.WriteLine($"{count}: ");
-                Print();
+            var aTimer = new Timer(1000);
 
-                forset.forestTress[0, 0].CheckTree(new Tree(10));
-                count++;
-                Thread.Sleep(_interval);
-            }
+            aTimer.Elapsed += OnTimedEvent;
+            aTimer.AutoReset = true;
+            aTimer.Enabled = true;
+
+            count++;
         }
-            
+        //public void Bootstrapping()
+        //{
+        //    CreateForset();
+        //    ConnectTrees2(100);
+        //    ITree tree = SetFire(10, 10);
+        //    SetInterval(1000);
+        //    int count = 1;
+        //    Console.WriteLine($"{count}: ");
+        //    Print();
 
-        public void CreateForset(int num1 = 20, int num2 = 20)
+        //    while (true)
+        //    {
+        //        Console.WriteLine($"{count}: ");
+        //        List<ITree> allOnFireTress = new List<ITree>();
+
+        //        for (int i = 0; i < forset.forestTress.GetLength(0); i++)
+        //        {
+        //            for (int j = 0; j < forset.forestTress.GetLength(1); j++)
+        //            {
+        //                if (forset.forestTress[i,j].State == State.OnFire)
+        //                {
+        //                    allOnFireTress.Add(forset.forestTress[i, j]);
+        //                }
+        //            }
+        //        }
+
+        //        allOnFireTress.ForEach(t => t.SetOthersOnFire());
+        //        allOnFireTress.ForEach(t => t.DownHealth());
+        //        Print();
+
+        //        count++;
+        //        Thread.Sleep(_interval);
+        //    }
+        //}
+
+        public void CreateForset(int row = 20, int column = 20)
         {
-            _num1 = num1;
-            _num2 = num2;
-            forset = _forsetFactory.CreateForest(num1, num2);
+            forset = _forsetFactory.CreateForest(row, column);
         }
 
-        public void ConnectTrees(int success)
+        public void ConnectTrees(int row, int column, int? success = null)
         {
-            for (int i = 0; i <_num1; i++)
+            for (int i = 0; i < forset.forestTress.GetLength(0); i++)
             {
-                for (int j = 0; j < _num2; j++)
+                for (int j = 0; j < forset.forestTress.GetLength(1); j++)
                 {
                     int number = _rand.Next(1, 101);
 
-                    if (number >= 1 && number <= success)
+                    if (number >= 1 && number <= (success))
                     {
-                        if (j < _num2 -1)
+                        if (i < forset.forestTress.GetLength(0) - 1)
                         {
-                            forset.forestTress[i, j +1].Subscriber(forset.forestTress[i, j]);
+                            forset.forestTress[i + 1, j].Subscriber(forset.forestTress[i, j]);
+                        }
+                        if (j < forset.forestTress.GetLength(1) - 1)
+                        {
+                            forset.forestTress[i, j + 1].Subscriber(forset.forestTress[i, j]);
                         }
                     }
                 }
-
-            }   
+            }
         }
-
-        public void SetFire(int index1, int index2)
+        public void ConnectTrees2(int? success = null)
         {
-            if (index1 >= 0 && index1 < _num1 && index2 >= 0 && index2< _num2)
+            for (int i = 0; i < forset.forestTress.GetLength(0); i++)
             {
-                forset.forestTress[index1, index2].TreeSetOnFire();
+                for (int j = 0; j < forset.forestTress.GetLength(1); j++)
+                {
+                    int number = _rand.Next(1, 101);
+
+                    if (number >= 1 && number <= (success))
+                    {
+                        if ((i + 1) <= forset.forestTress.GetLength(0) - 1)
+                        {
+                            forset.forestTress[i + 1, j].Subscriber(forset.forestTress[i, j]);
+                        }
+                        if ((i -1) >= 0)
+                        {
+                            forset.forestTress[i -1, j].Subscriber(forset.forestTress[i, j]);
+                        }
+
+                        if ((j + 1) <= forset.forestTress.GetLength(1) - 1)
+                        {
+                            forset.forestTress[i, j + 1].Subscriber(forset.forestTress[i, j]);
+                        }
+                        if ((j - 1) >= 0)
+                        {
+                            forset.forestTress[i , j - 1].Subscriber(forset.forestTress[i, j]);
+                        }
+                    }
+                }
             }
         }
 
-        public void SetInterval(int interval)
+        public void UnConnectTrees(int? success = null)
         {
-            _interval = interval;
+            for (int i = 0; i < forset.forestTress.GetLength(0); i++)
+            {
+                for (int j = 0; j < forset.forestTress.GetLength(1); j++)
+                {
+                    int number = _rand.Next(1, 101);
+
+                    if (number >= 1 && number <= (success))
+                    {
+                        if (j < forset.forestTress.GetLength(1) - 1)
+                        {
+                            forset.forestTress[i, j + 1].Unsubscriber(forset.forestTress[i, j]);
+                        }
+                    }
+                }
+            }
         }
 
+        public ITree SetFire(int index1, int index2)
+        {
+            if (index1 >= 0 && index1 < forset.forestTress.GetLength(0) && index2 >= 0 && index2 < forset.forestTress.GetLength(1))
+            {
+                forset.forestTress[index1, index2].TreeSetOnFire();
+                return forset.forestTress[index1, index2];
+            }
+            else
+            {
+                forset.forestTress[0, 0].TreeSetOnFire();
+                return forset.forestTress[0, 0];
+            }
+        }
+
+       
         public void Print()
         {
-            for (int i = 0; i < _num1; i++)
+            for (int i = 0; i < forset.forestTress.GetLength(0); i++)
             {
-                for (int j = 0; j < _num2; j++)
+                for (int j = 0; j < forset.forestTress.GetLength(1); j++)
                 {
-                    Console.Write(_stateText[forset.forestTress[i, j].State]);          
+                    Console.Write(_stateText[forset.forestTress[i, j].State]);
                 }
                 Console.WriteLine();
             }
