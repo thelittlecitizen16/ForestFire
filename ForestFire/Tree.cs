@@ -10,13 +10,11 @@ namespace ForestFire
         public event Action AllConnectTree;
         public int Health { get; private set; }
         public State State { get; private set; }
-        private bool _isFiratTime;
 
         public Tree(int health)
         {
             Health = health;
             State = State.Health;
-            _isFiratTime = true;
         }
 
         public void DownHealth()
@@ -30,10 +28,12 @@ namespace ForestFire
                 Health--;
             }   
         }
+
         public void SetOthersOnFire()
         {
             AllConnectTree?.Invoke();
         }
+
         public void TreeSetOnFire()
         {
             if (State == State.Health)
@@ -41,10 +41,12 @@ namespace ForestFire
                 State = State.OnFire;
             }
         }
+
         public void Subscriber(ITree tree)
         {
             tree.AllConnectTree += TreeSetOnFire;
         }
+
         public void Unsubscriber(ITree tree)
         {
             tree.AllConnectTree -= TreeSetOnFire;

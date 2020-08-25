@@ -7,6 +7,5 @@ namespace ForestFire.Interfaces
     public interface IForset
     {
         public ITree[,] forestTress { get; }
-
     }
 }
