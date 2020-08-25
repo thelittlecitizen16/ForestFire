@@ -19,6 +19,10 @@ namespace ForestFire
             _forsetFactory = forsetFactory;
             _rand = new Random();
             _stateText = new Dictionary<State, string>();
+            AddStateText();
+        }
+        private void AddStateText()
+        {
             _stateText.Add(State.Health, "O");
             _stateText.Add(State.OnFire, "X");
             _stateText.Add(State.Dead, ".");
