@@ -10,15 +10,10 @@ namespace ForestFire
         {
             ForestFactory forestFactory = new ForestFactory();
             ForsetHandler forsetHandler = new ForsetHandler(forestFactory);
-        
+            RunForset runForset = new RunForset(forsetHandler);
 
-            forsetHandler.Bootstrapping();
+            runForset.Bootstrapping();
             Console.ReadLine();
-        }
-        private static void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
-        {
-            Console.WriteLine("......");     
-        }
-       
+        }   
     }
 }
